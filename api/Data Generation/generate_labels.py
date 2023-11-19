@@ -60,7 +60,9 @@ def generate_companies(no_companies):
     company_ids = np.array([i for i in range(no_companies)])
     company_names = np.array([fake.company() for _ in range(no_companies)])
     company_industries = np.array([industry_names[i] for i in np.random.randint(0, len(industry_names), no_companies)])
-    return company_ids, company_names, company_industries
+    company_size = np.random.randint(20, 1000, no_companies)
+    company_revenue = np.array([i*np.randint(1000, 100000) for i in company_size])
+    return company_ids, company_names, company_industries, company_size, company_revenue
 
 def generate_institutes(no_institutes):
     institute_ids = np.array([i for i in range(no_institutes)])
