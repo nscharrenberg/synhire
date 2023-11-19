@@ -14,5 +14,13 @@
         {% csrf_token %}
         <button type="submit">Export Applicant Data as CSV</button>
     </form>
+
+    <br>
+    
+    <!-- Add a button to trigger data export -->
+    <form action="{% url 'export_data_vacancies' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Export Vacancy Data as CSV</button>
+    </form>
 </body>
 </html>

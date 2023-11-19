@@ -168,7 +168,7 @@ class VacancyForApplicantSerializer(serializers.ModelSerializer):
         ]
 
 
-class ApplicantVacancySerializer(serializers.ModelSerializer):
+class ApplicantVacancyForApplicantSerializer(serializers.ModelSerializer):
     vacancy = VacancyForApplicantSerializer(many=False, read_only=True)
 
     class Meta:
@@ -188,7 +188,7 @@ class ApplicantSerializer(serializers.ModelSerializer):
     education = ApplicantEducationSerializer(source='applicanteducation_set', many=True)
     certificates = ApplicantCertificateSerializer(source='applicantcertificate_set', many=True)
     work_experience = WorkExperienceSerializer(source='workexperience_set', many=True)
-    applications = ApplicantVacancySerializer(source='vacancyapplication_set', many=True)
+    applications = ApplicantVacancyForApplicantSerializer(source='vacancyapplication_set', many=True)
 
     class Meta:
         model = Applicant
@@ -200,5 +200,63 @@ class ApplicantSerializer(serializers.ModelSerializer):
             'skills',
             'languages',
             'work_experience',
+            'applications'
+        ]
+
+
+class ApplicantForVacancySerializer(serializers.ModelSerializer):
+    languages = ApplicantLanguageSerializer(source='applicantlanguage_set', many=True)
+    skills = ApplicantSkillSerializer(source='applicantskill_set', many=True)
+    education = ApplicantEducationSerializer(source='applicanteducation_set', many=True)
+    certificates = ApplicantCertificateSerializer(source='applicantcertificate_set', many=True)
+    work_experience = WorkExperienceSerializer(source='workexperience_set', many=True)
+
+    class Meta:
+        model = Applicant
+        fields = [
+            'id',
+            'name',
+            'education',
+            'certificates',
+            'skills',
+            'languages',
+            'work_experience'
+        ]
+
+
+class ApplicantVacancyForVacancySerializer(serializers.ModelSerializer):
+    applicant = ApplicantForVacancySerializer(many=False, read_only=True)
+
+    class Meta:
+        model = VacancyApplication
+        fields = [
+            'applicant',
+            'hired_at',
+            'left_at',
+            'hired_reason',
+            'left_reason'
+        ]
+
+
+class VacancySerializer(serializers.ModelSerializer):
+    company = CompanySerializer(many=False, read_only=True)
+    certificates = VacancyCertificateSerializer(source='vacancycertificate_set', many=True)
+    languages = VacancyLanguageSerializer(source='vacancylanguage_set', many=True)
+    skills = VacancySkillSerializer(source='vacancyskill_set', many=True)
+    applications = ApplicantVacancyForVacancySerializer(source='vacancyapplication_set', many=True)
+
+    class Meta:
+        model = Vacancy
+        fields = [
+            'title',
+            'role',
+            'location',
+            'salary',
+            'desired_degree',
+            'required_degree',
+            'company',
+            'certificates',
+            'skills',
+            'languages',
             'applications'
         ]
