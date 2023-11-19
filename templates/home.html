@@ -1,0 +1,18 @@
+<!-- templates/home.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Django App</title>
+</head>
+<body>
+    <h1>Export your Synthetic Data</h1>
+
+    <!-- Add a button to trigger data export -->
+    <form action="{% url 'export_data_applicants' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Export Applicant Data as CSV</button>
+    </form>
+</body>
+</html>

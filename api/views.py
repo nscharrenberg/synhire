@@ -1,3 +1,28 @@
+# views.py
+from django.http import HttpResponse
 from django.shortcuts import render
+from django.core.serializers.json import DjangoJSONEncoder
+from django.forms.models import model_to_dict
+import json
+from django.core import serializers
 
-# Create your views here.
+from api.models import Applicant
+from api.serializers.applicant_serializer import ApplicantSerializer
+
+
+def export_data_applicants(request):
+    # Fetch data for the Applicant model and related models
+    applicants = ApplicantSerializer(Applicant.objects.all(), many=True).data
+
+    # Convert the list to JSON
+    json_data = json.dumps(applicants, cls=DjangoJSONEncoder, indent=2)
+
+    # Create a response with the JSON data
+    response = HttpResponse(json_data, content_type='application/json')
+    response['Content-Disposition'] = 'attachment; filename=applicants_data.json'
+
+    return response
+
+
+def home(request):
+    return render(request, 'home.html')
