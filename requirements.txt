@@ -1,2 +1,7 @@
 Django~=4.2.7
 djangorestframework~=3.14.0
+faker
+numpy
+scipy
+matplotlib
+pandas

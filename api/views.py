@@ -6,6 +6,8 @@ from django.forms.models import model_to_dict
 import json
 from django.core import serializers
 
+from api.generators.correlation_analysis import perform_correlation_test
+from api.generators.normal_distribution import generate_synthetic_data
 from api.models import Applicant, Vacancy
 from api.serializers.applicant_serializer import ApplicantSerializer, VacancySerializer
 
@@ -34,6 +36,16 @@ def export_data_vacancies(request):
     # Create a response with the JSON data
     response = HttpResponse(json_data, content_type='application/json')
     response['Content-Disposition'] = 'attachment; filename=vacancies_data.json'
+
+    return response
+
+
+def generate_data(request):
+    data = generate_synthetic_data()
+
+    json_data = json.dumps(data, cls=DjangoJSONEncoder, indent=2)
+    response = HttpResponse(json_data, content_type='application/json')
+    response['Content-Disposition'] = 'attachment; filename=data_generated.json'
 
     return response
 

@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from api.views import home, export_data_applicants, export_data_vacancies
+from api.views import home, export_data_applicants, export_data_vacancies, generate_data
 
 urlpatterns = [
     path('', home, name='home'),
+    path('generate/', generate_data, name='generate_data'),
     path('export/applicants/', export_data_applicants, name='export_data_applicants'),
     path('export/vacancies/', export_data_vacancies, name='export_data_vacancies'),
     path('admin/', admin.site.urls),
