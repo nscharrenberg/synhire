@@ -14,13 +14,6 @@
         <button type="submit">Generate Data</button>
     </form>
 
-    <br>
-
-    <form action="{% url 'test_correlation' %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Perform Correlation Test</button>
-    </form>
-
     <h1>Export your Synthetic Data</h1>
 
     <!-- Add a button to trigger data export -->

@@ -6,7 +6,6 @@ from django.forms.models import model_to_dict
 import json
 from django.core import serializers
 
-from api.generators.correlation_analysis import perform_correlation_test
 from api.generators.normal_distribution import generate_synthetic_data
 from api.models import Applicant, Vacancy
 from api.serializers.applicant_serializer import ApplicantSerializer, VacancySerializer

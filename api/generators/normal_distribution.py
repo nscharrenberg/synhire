@@ -1,3 +1,4 @@
+import random
 import numpy as np
 from faker import Faker
 from django.utils import timezone
@@ -11,6 +12,11 @@ from api.models import (EducationalInstitute, Language, Skill, Certificate, Comp
 np.random.seed(42)
 
 fake = Faker()
+
+# Define a correlation matrix for skills
+correlation_matrix = np.array([[1.0, 0.7, 0.3],
+                               [0.7, 1.0, 0.5],
+                               [0.3, 0.5, 1.0]])
 
 
 def generate_synthetic_educational_institutes(num_institutes):
@@ -62,12 +68,6 @@ def generate_synthetic_applicants(num_applicants, institutes, languages, skills,
             for language in languages
         }
 
-        # Generate random skills and proficiencies
-        skill_proficiencies = {
-            skill: max(1, int(np.random.normal(3, 1)))
-            for skill in skills
-        }
-
         # Generate random certificates
         certificates_list = certificates[:np.random.randint(0, len(certificates))]
 
@@ -110,8 +110,15 @@ def generate_synthetic_applicants(num_applicants, institutes, languages, skills,
                 proficiency=proficiency
             )
 
-        # Create ApplicantSkill objects
-        for skill, proficiency in skill_proficiencies.items():
+        # Create ApplicantSkill objects with correlated proficiency levels
+        skill_values = np.random.multivariate_normal([4, 4, 4], correlation_matrix, size=1)
+        for index, skill in enumerate(skills):
+            if len(skill_values[0]) > index:
+                proficiency = max(0, min(5, round(skill_values[0][index])))
+            else:
+                # Handle the case where the index is out of bounds
+                proficiency = 0  # You may choose a different default value or handle it accordingly
+
             ApplicantSkill.objects.create(
                 applicant=applicant,
                 skill=skill,
@@ -160,12 +167,6 @@ def generate_synthetic_vacancies(num_vacancies, companies, skills, languages, ce
         required_degree = fake.text()
         role = fake.text()
 
-        # Generate random skills and proficiencies for the vacancy
-        skill_proficiencies = {
-            skill: max(1, int(np.random.normal(3, 1)))
-            for skill in skills
-        }
-
         # Generate random language proficiencies for the vacancy
         language_proficiencies = {
             language: max(1, int(np.random.normal(3, 1)))
@@ -186,13 +187,21 @@ def generate_synthetic_vacancies(num_vacancies, companies, skills, languages, ce
             role=role
         )
 
-        # Create VacancySkill objects
-        for skill, proficiency in skill_proficiencies.items():
+        # Create VacancySkill objects with correlated proficiency levels
+        skill_values = np.random.multivariate_normal([4, 4, 4], correlation_matrix, size=1)
+        for index, skill in enumerate(skills):
+            if len(skill_values[0]) > index:
+                desired_proficiency = max(0, min(5, round(skill_values[0][index])))
+            else:
+                # Handle the case where the index is out of bounds
+                desired_proficiency = 0  # You may choose a different default value or handle it accordingly
+
+            required_proficiency = max(0, min(desired_proficiency + random.randint(-1, 1), 5))
             VacancySkill.objects.create(
                 vacancy=vacancy,
                 skill=skill,
-                desired_proficiency=proficiency,
-                required_proficiency=proficiency
+                desired_proficiency=desired_proficiency,
+                required_proficiency=required_proficiency
             )
 
         # Create VacancyLanguage objects
@@ -297,7 +306,8 @@ def generate_synthetic_data():
     for idx, applicant in enumerate(applicants, 1):
         applicant_response = {"name": f"\nApplicant {idx}: {applicant.name}", "education": []}
         for education in applicant.applicanteducation_set.all():
-            applicant_response["education"].append(f"- {education.degree} at {education.institute} ({education.started_at} - {education.graduated_at})")
+            applicant_response["education"].append(
+                f"- {education.degree} at {education.institute} ({education.started_at} - {education.graduated_at})")
 
         applicant_response["languages"] = []
         for lang in applicant.applicantlanguage_set.all():
@@ -309,11 +319,13 @@ def generate_synthetic_data():
 
         applicant_response["certificates"] = []
         for cert in applicant.applicantcertificate_set.all():
-            applicant_response["certificates"].append(f"- {cert.certificate} received at {cert.received_at}, expired at {cert.expired_at}")
+            applicant_response["certificates"].append(
+                f"- {cert.certificate} received at {cert.received_at}, expired at {cert.expired_at}")
 
         applicant_response["work_experience"] = []
         for exp in applicant.workexperience_set.all():
-            applicant_response["work_experience"].append(f"- {exp.role} at {exp.company} ({exp.hired_at} - {exp.left_at})")
+            applicant_response["work_experience"].append(
+                f"- {exp.role} at {exp.company} ({exp.hired_at} - {exp.left_at})")
 
         response["applicants"].append(applicant_response)
 
@@ -324,11 +336,13 @@ def generate_synthetic_data():
                             "skills": []}
 
         for skill in vacancy.vacancyskill_set.all():
-            vacancy_response["skills"].append(f"- {skill.skill}: Desired {skill.desired_proficiency}/5, Required {skill.required_proficiency}/5")
+            vacancy_response["skills"].append(
+                f"- {skill.skill}: Desired {skill.desired_proficiency}/5, Required {skill.required_proficiency}/5")
 
         vacancy_response["languages"] = []
         for lang in vacancy.vacancylanguage_set.all():
-            vacancy_response["languages"].append(f"- {lang.language}: Desired {lang.desired_proficiency}/5, Required {lang.required_proficiency}/5")
+            vacancy_response["languages"].append(
+                f"- {lang.language}: Desired {lang.desired_proficiency}/5, Required {lang.required_proficiency}/5")
 
         vacancy_response["certificates"] = []
         for cert in vacancy.vacancycertificate_set.all():
@@ -341,5 +355,3 @@ def generate_synthetic_data():
         response["vacancies"].append(vacancy_response)
 
     return response
-
-
