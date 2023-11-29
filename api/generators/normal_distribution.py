@@ -286,7 +286,7 @@ def generate_synthetic_vacancies(num_vacancies, companies, skills, languages, ce
 
 def generate_synthetic_data():
     # Generate a random correlation matrix
-    mean_vector = np.random.uniform(low=1, high=5, size=NUM_SKILLS)  # Adjust the low and high values as needed
+    mean_vector = np.random.uniform(low=0, high=5, size=NUM_SKILLS)  # Adjust the low and high values as needed
     correlation_matrix = np.random.uniform(low=0.5, high=1, size=(NUM_SKILLS, NUM_SKILLS))
 
     # Make the matrix symmetric
