@@ -2,7 +2,7 @@ import numpy as np
 
 np.random.seed(74321)
 def generate_proficiency(data_ids):
-    proficiencies = np.random.beta(3.7, 1.8, len(data_ids))*10
+    proficiencies = np.random.beta(4, 2.5, len(data_ids))*10
     return np.round(proficiencies, 1)
 
 data = generate_proficiency(np.arange(0, 1000))

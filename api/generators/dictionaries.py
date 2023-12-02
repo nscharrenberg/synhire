@@ -1,11 +1,4 @@
 import numpy as np
-from faker import Faker
-
-from api import models
-
-Faker.seed(74321)
-np.random.seed(74321)
-fake = Faker()
 
 industry_names = np.array(['Software Development', 'Hardware Manufacturing', 'Cybersecurity', 'Cloud Computing',
                            'Artificial Intelligence (AI) and Machine Learning',
@@ -42,73 +35,40 @@ industry_vacancies = np.array([['Senior Software Engineer', 'Frontend Developer'
                                 'Incident Response Specialist']
                                ])
 
-languages = np.array(['English', 'Dutch', 'French', 'German'])
+skills = np.array([
+    'Python', 'JavaScript', 'Java', 'C/C++', 'Ruby', 'PHP', 'Swift', 'Kotlin', 'Objective-C', 'TypeScript',
+    'HTML/CSS', 'SQL', 'Shell Scripting', 'MATLAB', 'R', 'Scala', 'Go', 'Perl', 'Rust', 'Assembly Language',
+    'Bash Scripting', 'PowerShell', 'Node.js', 'React', 'Angular', 'Vue.js', 'Django', 'Flask', 'Spring Framework',
+    'Hibernate', 'Android SDK', 'iOS SDK', 'Xamarin', 'Unity', 'Unreal Engine', 'Selenium', 'Appium', 'JMeter',
+    'Gatling',
+    'Docker', 'Kubernetes', 'Git', 'SVN', 'CI/CD', 'AWS', 'Azure', 'GCP', 'Linux/Unix Administration',
+    'Windows Server Administration',
+    'TCP/IP', 'HTTP/HTTPS', 'DNS', 'Firewall Configuration', 'IDS', 'VPNs', 'OWASP Top 10',
+    'Data Structures and Algorithms',
+    'OOP Concepts', 'Functional Programming', 'Concurrent Programming', 'Reactive Programming', 'RESTful API Design',
+    'GraphQL',
+    'Microservices Architecture', 'MongoDB', 'Cassandra', 'MySQL', 'PostgreSQL', 'Distributed Computing',
+    'Parallel Computing',
+    'AWS', 'Azure', 'GCP', 'Solidity', 'Truffle', 'Payment Gateway Integration', 'Telehealth Technologies', 'Unity',
+    'Unreal Engine',
+    'Educational Technology Tools', 'ROS - Robot Operating System', 'Renewable Energy Systems', 'Hadoop', 'Spark',
+    'Snowflake', 'Redshift',
+    'D3.js', 'Matplotlib', 'NLTK', 'SpaCy', 'OpenCV', 'TensorFlow', 'Scikit-learn', 'Keras', 'Tableau', 'Power BI',
+    'Flutter', 'React Native',
+    'Digital Forensics Tools', 'Incident Response Tools', 'NIST', 'ISO 27001', 'Secure Coding Guidelines', 'Scrum',
+    'Kanban',
+    'SDLC Models', 'Cloud Security Best Practices', 'Threat Modeling Techniques', 'Ethical Hacking Methodologies',
+    'Burp Suite', 'Metasploit',
+    'Cross-platform Development Strategies', 'Secure Mobile Development Practices', 'Wireless Security Protocols',
+    'Cybersecurity Incident Response Planning',
+    'Malware Analysis Tools', 'Interpreters and Compilers', 'Software Design Patterns',
+    'Mobile App Performance Optimization', 'System Design Principles',
+    'Real-time Systems Development', 'Fault-Tolerant Systems Design', 'DevSecOps Principles',
+    'Cloud Migration Strategies', 'Cryptography Libraries'
+])
 
+industry_vacancies_dict = {}
 
-def generate_applicants(no_applicants):
-    applicant_ids = np.array([i for i in range(no_applicants)])
-    applicant_names = np.array([fake.name() for _ in range(no_applicants)])
-    return applicant_ids, applicant_names
+for idx, industry in enumerate(industry_names):
+    industry_vacancies_dict[industry] = list(industry_vacancies[idx])
 
-
-def generate_cerftificates(no_certificates):
-    certificate_ids = np.array([i for i in range(no_certificates)])
-
-    return certificate_ids
-
-def generate_companies(no_companies):
-    company_ids = np.array([i for i in range(no_companies)])
-    company_names = np.array([fake.company() for _ in range(no_companies)])
-    company_industries = np.array([industry_names[i] for i in np.random.randint(0, len(industry_names), no_companies)])
-    company_size = np.random.randint(20, 1000, no_companies)
-    company_revenue = np.array([i*np.randint(1000, 100000) for i in company_size])
-    return company_ids, company_names, company_industries, company_size, company_revenue
-
-def generate_institutes(no_institutes):
-    institute_ids = np.array([i for i in range(no_institutes)])
-
-    return institute_ids
-
-#languages will be hardcoded
-
-def generate_skills(no_skills):
-    skill_ids = np.array([i for i in range(no_skills)])
-
-    return skill_ids
-
-def generate_vacancies(no_vacancies):
-    vacancy_ids = np.array([i for i in range(no_vacancies)])
-
-    return vacancy_ids
-
-print(generate_companies(5))
-print(generate_applicants(5))
-print(generate_institutes(5))
-
-applicant_ids, applicant_names = generate_applicants(5)
-
-for i in range(len(applicant_ids)):
-    applicant = models.Applicant.objects.create(name=applicant_names[i], id=applicant_ids[i])
-    applicant.save()
-
-company_ids, company_names, company_industries = generate_companies(5)
-
-for i in range(len(company_ids)):
-    company = models.Company.objects.create(name=company_names[i], id=company_ids[i], industry=company_industries[i])
-    company.save()
-
-institute_ids = generate_institutes(5)
-
-for i in range(len(institute_ids)):
-    institute = models.EducationalInstitute.objects.create(id=institute_ids[i])
-    institute.save()
-
-skill_ids = generate_skills(5)
-
-for i in range(len(skill_ids)):
-    skill = models.Skill.objects.create(id=skill_ids[i])
-    skill.save()
-
-for i in range(len(languages)):
-    language = models.Language.objects.create(name=languages[i], id=i)
-    language.save()

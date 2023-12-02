@@ -3,6 +3,7 @@ import numpy as np
 from faker import Faker
 from django.utils import timezone
 from faker_education import SchoolProvider
+from dictionaries import industry_names, industry_vacancies_dict, skills
 from scipy.linalg import cholesky
 
 from api.models import (EducationalInstitute, Language, Skill, Certificate, Company,
@@ -25,6 +26,11 @@ NUM_APPLICANTS = 100
 NUM_VACANCIES = 10
 
 MAX_ATTEMPTS = 1000
+
+
+def generate_proficiency(data_ids):
+    proficiencies = np.random.beta(3.7, 1.8, len(data_ids)) * 10
+    return np.round(proficiencies, 1)
 
 
 def ensure_positive_semidefinite(matrix):
@@ -51,7 +57,8 @@ def generate_synthetic_languages(num_languages):
 
 
 def generate_synthetic_skills(num_skills):
-    return [Skill.objects.create(name=fake.domain_word()) for _ in range(num_skills)]
+    num_skills = min(num_skills, len(skills))
+    return [Skill.objects.create(name=skills[_]) for _ in range(num_skills)]
 
 
 def generate_synthetic_certificates(num_certificates):
@@ -59,17 +66,19 @@ def generate_synthetic_certificates(num_certificates):
 
 
 def generate_synthetic_companies(num_companies):
+    company_size = np.random.randint(20, 1000, num_companies)
+    company_revenue = np.array([i * np.randint(1000, 100000) for i in company_size])
     return [Company.objects.create(
         name=fake.company(),
-        size=np.random.randint(1, 1000),
-        revenue=np.random.uniform(100000, 100000000),
-        industry=fake.color_name(),
+        size=company_size[_],
+        revenue=company_revenue[_],
+        industry=np.random.choice(industry_names),
         rating=np.random.uniform(1, 5),
         description=fake.catch_phrase()
     ) for _ in range(num_companies)]
 
 
-def generate_synthetic_applicants(num_applicants, institutes, languages, skills, certificates, companies, mean_vector, correlation_matrix):
+def generate_synthetic_applicants(num_applicants, institutes, languages, skills, certificates, companies):
     applicants = []
 
     for _ in range(num_applicants):
@@ -86,8 +95,8 @@ def generate_synthetic_applicants(num_applicants, institutes, languages, skills,
 
         # Generate random language proficiencies
         language_proficiencies = {
-            language: max(1, int(np.random.normal(3, 1)))
-            for language in languages
+            language: max(1, int(proficiency))
+            for language, proficiency in zip(languages, generate_proficiency(languages))
         }
 
         # Generate random certificates
@@ -132,14 +141,11 @@ def generate_synthetic_applicants(num_applicants, institutes, languages, skills,
                 proficiency=proficiency
             )
 
-        # Create ApplicantSkill objects with correlated proficiency levels
-        skill_values = np.random.multivariate_normal(mean_vector, correlation_matrix, size=1)
-        for index, skill in enumerate(skills):
-            if len(skill_values[0]) > index:
-                proficiency = max(0, min(5, round(skill_values[0][index])))
-            else:
-                # Handle the case where the index is out of bounds
-                proficiency = 0  # You may choose a different default value or handle it accordingly
+            # Create ApplicantSkill objects with correlated proficiency levels
+            generated_proficiencies = generate_proficiency(skills)
+
+            for index, skill in enumerate(skills):
+                proficiency = generated_proficiencies[index] if index < len(generated_proficiencies) else 0
 
             ApplicantSkill.objects.create(
                 applicant=applicant,
@@ -177,12 +183,15 @@ def generate_synthetic_applicants(num_applicants, institutes, languages, skills,
     return applicants
 
 
-def generate_synthetic_vacancies(num_vacancies, companies, skills, languages, certificates, applicants, mean_vector, correlation_matrix):
+def generate_synthetic_vacancies(num_vacancies, companies, skills, languages, certificates, applicants):
     vacancies = []
 
     for _ in range(num_vacancies):
-        title = fake.job()
         company = np.random.choice(companies)
+        company_industry = company.industry
+        if (company_industry in industry_vacancies_dict):
+            vacancies_in_industry = industry_vacancies_dict[company_industry]
+            title = np.random.choice(vacancies_in_industry)
         location = fake.city()
         salary = np.random.uniform(30000, 100000)
         desired_degree = fake.cryptocurrency_code()
@@ -191,8 +200,8 @@ def generate_synthetic_vacancies(num_vacancies, companies, skills, languages, ce
 
         # Generate random language proficiencies for the vacancy
         language_proficiencies = {
-            language: max(1, int(np.random.normal(3, 1)))
-            for language in languages
+            language: max(1, int(proficiency))
+            for language, proficiency in zip(languages, generate_proficiency(languages))
         }
 
         # Generate random certificates for the vacancy
@@ -210,15 +219,18 @@ def generate_synthetic_vacancies(num_vacancies, companies, skills, languages, ce
         )
 
         # Create VacancySkill objects with correlated proficiency levels
-        skill_values = np.random.multivariate_normal(mean_vector, correlation_matrix, size=1)
-        for index, skill in enumerate(skills):
-            if len(skill_values[0]) > index:
-                desired_proficiency = max(0, min(5, round(skill_values[0][index])))
-            else:
-                # Handle the case where the index is out of bounds
-                desired_proficiency = 0  # You may choose a different default value or handle it accordingly
 
-            required_proficiency = max(0, min(desired_proficiency + random.randint(-1, 1), 5))
+        desired_proficiencies = generate_proficiency(skills)
+
+        for index, skill in enumerate(skills):
+            desired_proficiency = max(1, desired_proficiencies[index])  # Ensure desired proficiency is not lower than 1
+
+            # Calculate required proficiency by subtracting a random value between 0 and 3 from desired proficiency
+            random_subtraction = random.randint(0, 3)
+            required_proficiency = max(0
+                                       ,
+                                       desired_proficiency - random_subtraction)  # required proficiency can also be 0
+
             VacancySkill.objects.create(
                 vacancy=vacancy,
                 skill=skill,
@@ -285,18 +297,6 @@ def generate_synthetic_vacancies(num_vacancies, companies, skills, languages, ce
 
 
 def generate_synthetic_data():
-    # Generate a random correlation matrix
-    mean_vector = np.random.uniform(low=0, high=5, size=NUM_SKILLS)  # Adjust the low and high values as needed
-    correlation_matrix = np.random.uniform(low=0.5, high=1, size=(NUM_SKILLS, NUM_SKILLS))
-
-    # Make the matrix symmetric
-    correlation_matrix = 0.5 * (correlation_matrix + correlation_matrix.T)
-
-    # Set diagonal elements to 1
-    np.fill_diagonal(correlation_matrix, 1.0)
-
-    # Ensure positive semi-definite correlation matrix
-    correlation_matrix = ensure_positive_semidefinite(correlation_matrix)
 
     # Generate synthetic data for educational institutes, languages, skills, certificates, and companies
     educational_institutes = generate_synthetic_educational_institutes(num_institutes=NUM_INSTITUTES)
@@ -311,17 +311,13 @@ def generate_synthetic_data():
                                                languages=languages,
                                                skills=skills,
                                                certificates=certificates,
-                                               companies=companies,
-                                               mean_vector=mean_vector,
-                                               correlation_matrix=correlation_matrix)
+                                               companies=companies)
 
     vacancies = generate_synthetic_vacancies(num_vacancies=NUM_VACANCIES,
                                              companies=companies,
                                              skills=skills,
                                              languages=languages,
                                              certificates=certificates,
-                                             applicants=applicants,
-                                             mean_vector=mean_vector,
-                                             correlation_matrix=correlation_matrix)
+                                             applicants=applicants)
 
     return "Done"
