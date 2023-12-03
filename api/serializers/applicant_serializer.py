@@ -44,12 +44,13 @@ class ApplicantLanguageSerializer(serializers.ModelSerializer):
 
 
 class ApplicantSkillSerializer(serializers.ModelSerializer):
+    skill_id = serializers.ReadOnlyField(source='skill.id')
     name = serializers.ReadOnlyField(source='skill.name')
 
     class Meta:
         model = ApplicantSkill
         fields = [
-            'id',
+            'skill_id',
             'name',
             'proficiency'
         ]
@@ -109,12 +110,13 @@ class WorkExperienceSerializer(serializers.ModelSerializer):
 
 
 class VacancySkillSerializer(serializers.ModelSerializer):
+    skill_id = serializers.ReadOnlyField(source='skill.id')
     name = serializers.ReadOnlyField(source='skill.name')
 
     class Meta:
         model = VacancySkill
         fields = [
-            'id',
+            'skill_id',
             'name',
             'desired_proficiency',
             'required_proficiency'
