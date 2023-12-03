@@ -3,7 +3,7 @@ import numpy as np
 from faker import Faker
 from django.utils import timezone
 from faker_education import SchoolProvider
-from dictionaries import industry_names, industry_vacancies_dict, skills
+from api.generators.dictionaries import industry_names, industry_vacancies_dict, skills
 from scipy.linalg import cholesky
 
 from api.models import (EducationalInstitute, Language, Skill, Certificate, Company,
