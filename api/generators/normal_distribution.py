@@ -70,7 +70,7 @@ def generate_synthetic_companies(num_companies):
     return [Company.objects.create(
         name=fake.company(),
         size=company_size[_],
-        revenue=company_revenue[_],
+        revenue=float(company_revenue[_]),
         industry=np.random.choice(industry_names),
         rating=np.random.uniform(1, 5),
         description=fake.catch_phrase()
