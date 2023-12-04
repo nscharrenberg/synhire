@@ -4,7 +4,6 @@ from faker import Faker
 from django.utils import timezone
 from faker_education import SchoolProvider
 from api.generators.dictionaries import industry_names, industry_vacancies_dict, skills
-from scipy.linalg import cholesky
 
 from api.models import (EducationalInstitute, Language, Skill, Certificate, Company,
                         Applicant, Vacancy, ApplicantLanguage, ApplicantSkill,
@@ -67,7 +66,7 @@ def generate_synthetic_certificates(num_certificates):
 
 def generate_synthetic_companies(num_companies):
     company_size = np.random.randint(20, 1000, num_companies)
-    company_revenue = np.array([i * np.randint(1000, 100000) for i in company_size])
+    company_revenue = np.array([i * random.randint(1000, 100000) for i in company_size])
     return [Company.objects.create(
         name=fake.company(),
         size=company_size[_],
@@ -297,7 +296,6 @@ def generate_synthetic_vacancies(num_vacancies, companies, skills, languages, ce
 
 
 def generate_synthetic_data():
-
     # Generate synthetic data for educational institutes, languages, skills, certificates, and companies
     educational_institutes = generate_synthetic_educational_institutes(num_institutes=NUM_INSTITUTES)
     languages = generate_synthetic_languages(num_languages=NUM_LANGUAGES)
